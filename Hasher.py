@@ -23,27 +23,19 @@ def find_random_hash_with_difficulty(input_string, difficulty):
     #       FirstName1 FirstName2 FirstName3 FirstName4 NONCE)
     nonce = calculateNonce()
     while True:
-        if attempts // 1000:
-            nonce = calculateNonce()
-            print(f"New nonce {nonce}")
-
         sha256_random_hash = sha256(f'{input_string} {nonce}{attempts}'.encode()).hexdigest()
         attempts += 1
         if sha256_random_hash.startswith(prefix):
             print(f"Found Hash {sha256_random_hash}")
+            break
         if attempts >= 100_000_000_000:
             print("Max attempts reached!")
             attempts = -1
             break
         elif attempts % 1000:
-            print(f"Attempt {attempts}")
+            nonce = calculateNonce()
+            print(f"Attempts {attempts}, New nonce {nonce}")
 
-    while not (sha256_random_hash := sha256(f'{input_string} {calculateNonce()}'.encode()).hexdigest()).startswith(prefix):
-        attempts += 1
-        if attempts >= 100_000_000_000:
-            print("Max attempts reached!")
-            attempts = -1
-            break
 
     # Stop performance clock
     end = perf_counter()
