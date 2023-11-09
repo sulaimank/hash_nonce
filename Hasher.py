@@ -21,21 +21,27 @@ def find_random_hash_with_difficulty(input_string, difficulty):
     # that the hash will have preceding numbers.  If max attempts has exceeded then stop the mining
     # Input String: When there are four members in your team the input format will be -
     #       FirstName1 FirstName2 FirstName3 FirstName4 NONCE)
-    nonce = calculateNonce()
+    orig_nonce = calculateNonce()
+    recalculate_nonce = 0
     while True:
-        sha256_random_hash = sha256(f'{input_string} {nonce}{attempts}'.encode()).hexdigest()
-        attempts += 1
+        if recalculate_nonce == 10_000:
+            recalculate_nonce = 0
+            orig_nonce = calculateNonce()
+            nonce = orig_nonce + str(recalculate_nonce)
+        else:
+            recalculate_nonce += 1
+            nonce = orig_nonce + str(recalculate_nonce)
+
+        input_string_with_nonce = f'{input_string} {nonce}'.encode()
+        sha256_random_hash = sha256(input_string_with_nonce).hexdigest()
         if sha256_random_hash.startswith(prefix):
-            print(f"Found Hash {sha256_random_hash}")
             break
+
+        attempts += 1
         if attempts >= 100_000_000_000:
             print("Max attempts reached!")
             attempts = -1
             break
-        elif attempts % 1000:
-            nonce = calculateNonce()
-            print(f"Attempts {attempts}, New nonce {nonce}")
-
 
     # Stop performance clock
     end = perf_counter()
@@ -43,6 +49,7 @@ def find_random_hash_with_difficulty(input_string, difficulty):
     duration = end - start
     if attempts != -1:
         print(f"Solved hash {sha256_random_hash} with difficulty {difficulty} with attempts {attempts}")
+        print(f"The input string is {input_string_with_nonce} using nonce {nonce}")
         return sha256_random_hash, attempts, duration
     else:
         return "", attempts, duration
@@ -53,7 +60,7 @@ highlyRandomizedHash = ""
 totalAttempts = 0
 
 
-MIN_DIFFICULTY_LEVEL = 4
+MIN_DIFFICULTY_LEVEL = 2
 MAX_DIFFICULTY_LEVEL = 11
 duration = 0
 
